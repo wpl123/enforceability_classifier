@@ -1,0 +1,10 @@
+venv/
+data/
+bak/
+utils/
+.git.old/
+.vscode
+.history
+app/.vscode
+app/__pycache
+workspace.code-workspace
