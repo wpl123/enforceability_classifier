@@ -5,6 +5,7 @@ import regex,re
 import logging
 import glob, os, sys, inspect
 from datetime import datetime, date
+from contextlib import suppress
 
 
 
@@ -14,6 +15,20 @@ logs_dir = "/home/admin/dockers/masters/data/cond_cat/logs/"
 files_dir = "/home/admin/dockers/masters/data/pdfminer/search/"
 search_dir = "/home/admin/dockers/masters/data/cond_cat/search/"
 cond_dir = "/home/admin/dockers/masters/data/cond_cat/"
+
+
+def get_lines(iterable):
+#    print(iterable)            # https://stackoverflow.com/questions/323750/how-to-access-the-previous-next-element-in-a-for-loop#323910
+    iterator = iter(iterable)
+    prev_item = None
+    current_item = next(iterator)  # throws StopIteration if empty.
+    for next_item in iterator:
+        yield (prev_item, current_item, next_item)
+        prev_item = current_item
+        current_item = next_item
+    yield (prev_item, current_item, None)
+
+
 
 def setupLogging(dest_dir=None):
 
@@ -27,7 +42,7 @@ def setupLogging(dest_dir=None):
 
 
 
-def write_csv(conditions):
+def write_csv(df_cond):
     
     cat1 = []
     cat2 = [] 
@@ -41,48 +56,93 @@ def write_csv(conditions):
     fname4 = cond_dir + 'cat4/consent_sub_section.csv'
     fname5 = cond_dir + 'cat5/consent_sub_section.csv'
     
-    for condition in conditions:
+    df_sub = get_sub_headers() 
+    pd.set_option('display.max_rows', None)
 
-        for sub_header in condition:
+    for i in range(len(df_cond)):
 
-            print(sub_header)
+#        cond_cat = df_sub[df_sub.Sub_Header == df_cond.iloc[i,1]]
+        for j in range(len(df_sub)):
+#            print(f"Cond: {df_cond.iloc[i,1]} Sub: {df_sub.iloc[j,0]}")
+            if df_cond.iloc[i,1] == df_sub.iloc[j,0]:
 
-#            if sub_header[2] == 1:
-#                cat1.append(sub_header)
-#            elif sub_header[2] == 2:
-#                cat2.append(sub_header)
-#            elif sub_header[2] == 3:
-#                cat3.append(sub_header)
-#            elif sub_header[2] == 4:
-#                cat4.append(sub_header)
-#            if sub_header[2] == 5:
-#                cat5.append(sub_header)
-#            else:
-#                pass            
-#    
-#
-#    df1 = pd.DataFrame(cat1,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
-#    df1.to_csv(fname1,encoding='utf-8',index=False,mode='w') 
-#    logging.info(' write_csv CSV: ' + fname1 + ' written to')
-#
-#    df2 = pd.DataFrame(cat2,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
-#    df2.to_csv(fname2,encoding='utf-8',index=False,mode='w') 
-#    logging.info(' write_csv CSV: ' + fname1 + ' written to')
-#
-#    df3 = pd.DataFrame(cat3,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
-#    df3.to_csv(fname3,encoding='utf-8',index=False,mode='w') 
-#    logging.info(' write_csv CSV: ' + fname1 + ' written to')
-#
-#    df4 = pd.DataFrame(cat4,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
-#    df4.to_csv(fname1,encoding='utf-8',index=False,mode='w') 
-#    logging.info(' write_csv CSV: ' + fname1 + ' written to')
-#
-#    df5 = pd.DataFrame(cat5,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
-#    df5.to_csv(fname5,encoding='utf-8',index=False,mode='w') 
-#    logging.info(' write_csv CSV: ' + fname1 + ' written to')
+                fields = [df_cond.iloc[i,0],df_cond.iloc[i,1],df_sub.iloc[j,1],df_cond.iloc[i,2]]
+               
+                if df_sub.iloc[j,1] == 1:
+                    cat1.append(fields)
+                elif df_sub.iloc[j,1] == 2:
+                    cat2.append(fields)
+                elif df_sub.iloc[j,1] == 3:
+                    cat3.append(fields)
+                elif df_sub.iloc[j,1] == 4:
+                    cat4.append(fields)
+                elif df_sub.iloc[j,1] == 5:
+                    cat5.append(fields)
+                else:
+                    pass            
+    
+
+    df1 = pd.DataFrame(cat1,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
+    df1.to_csv(fname1,encoding='utf-8',index=False,mode='w') 
+    logging.info(' write_csv CSV: ' + fname1)
+    
+    df2 = pd.DataFrame(cat2,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
+    df2.to_csv(fname2,encoding='utf-8',index=False,mode='w') 
+    logging.info(' write_csv CSV: ' + fname2)
+    
+    df3 = pd.DataFrame(cat3,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
+    df3.to_csv(fname3,encoding='utf-8',index=False,mode='w') 
+    logging.info(' write_csv CSV: ' + fname3)
+    
+    df4 = pd.DataFrame(cat4,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
+    df4.to_csv(fname4,encoding='utf-8',index=False,mode='w') 
+    logging.info(' write_csv CSV: ' + fname4 )
+    
+    df5 = pd.DataFrame(cat5,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
+    df5.to_csv(fname5,encoding='utf-8',index=False,mode='w') 
+    logging.info(' write_csv CSV: ' + fname5)
 
     return True  # need to check status of file     
 
+
+
+
+def clean_text(textfile,text):
+
+    #1. Remove footers 
+    text = regex.sub(r'NSW Government','',text)
+    text = regex.sub(r'Department of Planning\, Industry and Environment','',text)
+    text = regex.sub(r'Planning\, Industry & Environment','',text)
+    text = regex.sub(r'Department of Planning & Environment','',text)
+    text = regex.sub(r'Department of Planning and Environment','',text) 
+    text = regex.sub(r'Department of Planning','',text)
+    
+    # Remove section numbers and page numbers
+    text = regex.sub(r'(\n*[0-9][0-9]*\.?\s*\n)','',text)
+    text = regex.sub(r'(\n\-\s[0-9][0-9]*\s\-(\s\n)*)','',text)
+#    text = regex.sub(r'(\n\n+)','\n',text)
+    
+    #2. Remove Tables
+    if regex.search("Table",text) != None:
+        pattern = '(\A.*(?=Table))'
+        table_pattern = regex.compile(pattern,regex.DOTALL)    
+        table_search = table_pattern.search(text)
+        if table_search != None:
+            text = str(table_search.group(0))
+            
+    
+    #3. Remove Notes
+    if regex.search("Note",text) != None:
+        pattern = '(\A.*(?=Note))'
+        table_pattern = regex.compile(pattern,regex.DOTALL)    
+        table_search = table_pattern.search(text)
+        if table_search != None:
+            text = str(table_search.group(0))
+           
+
+
+    logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' Cleaning Text ')    
+    return text
 
 
 
@@ -94,11 +154,11 @@ def search_text(bookends,text):  # conditions = [textfile, bookend1, bookend2]
         textfile = str(args[0])
         bookend1 = str(args[1])
         bookend2 = str(args[2])
-        cond_cat1 = str(args[3])
-        
+        sub_header1 = str(args[3])
 
         if bookend1 != "" and bookend2 != "":
 
+#            pattern = '(?<=' + bookend1 + ').*(?=' + bookend2 + ')'
             pattern = '(?<=' + bookend1 + ').*(?=' + bookend2 + ')'
 
             logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' Extracting text using search pattern ' + pattern + '')
@@ -109,12 +169,16 @@ def search_text(bookends,text):  # conditions = [textfile, bookend1, bookend2]
 
             if (sub_header_search == None):
                 logging.info(inspect.stack()[0][3] + ' ERROR TEXT: ' + textfile + ' Couldn\'t find pattern ' + pattern + ' in text')
+                search_result = ''
                 return False
             else:
                 logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' search result is ' + str(sub_header_search)[0:80] + ' in text')
                 search_result = str(sub_header_search.group(0))
 
-            fields = [textfile,bookend1,cond_cat1,search_result]
+#            print(f"Textfile: {textfile} Sub Header: {sub_header1}")
+
+            final_text = clean_text(textfile,search_result)
+            fields = [textfile,sub_header1,final_text]
             conditions.append(fields)
         else:
             logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' missing bookends in search string' + str(sub_header_search) + ' in text')
@@ -125,23 +189,30 @@ def search_text(bookends,text):  # conditions = [textfile, bookend1, bookend2]
 
 
 
-def search_line(textfile,sub_header,line,matchno,i):  # Note! no point matching for line feeds prior to this line
+def search_line(textfile,sub_header,prev_line,curr_line,next_line,matchno,i):  # Note! no point matching for line feeds prior to this line
     
+    search_failed = 'SearchFail'
+    #skip 1st line then check for newlines above and below the sub section heading
+    if i != 1 and regex.search(r'(\n\s*)',prev_line) == None and regex.search(r'(\n\s*)',next_line) == None:
+        return search_failed
+
     pattern = r'(\b)' + sub_header + r'(\s*\n)'
 #    pattern = regex.compile(pattern,regex.DOTALL) 
 #    search = pattern.search(line)
-    search = regex.search(pattern,line,regex.DOTALL)
+#    pattern = r'(\n+\s*)' + sub_header + r'(\s*\n)'
+    search = regex.match(pattern,curr_line,regex.DOTALL)
 
-#    if i == 6 or i == 12:
-#        print(f'Line: {i} pattern: {pattern}, line text: {line}')
+#    if i == 1:
+#        logging.info(inspect.stack()[0][3] + '   TEXT: ' + os.path.basename(textfile) + ' Searching using ' + str(pattern))
+
     if search != None:
         section_matched = True
         logging.info(inspect.stack()[0][3] + '   TEXT: ' + os.path.basename(textfile) + ' Found ' + matchno + ' sub header: ' + str(pattern) + ' on line: ' + str(i))
-        print(textfile, " matched ", search)
-        return True  
+#        print(textfile, " matched ", search)
+        return pattern  
     else:
 #        logging.info(inspect.stack()[0][3] + '   TEXT: ' + os.path.basename(textfile) + matchno + ' Pattern ' + str(pattern) + ' not found on line: ' + str(i))
-        return False
+        return search_failed
 
 
 
@@ -151,27 +222,32 @@ def get_bookends(textfile):
     result = []
     bookends = []
     bookend1 = ""
-    bookend2 = ""
+    bookend2 = "SearchFail"
     first_sub_header_matched = False
     second_sub_header_matched = False
     end_of_file = False
     previous_sub_header = ""
-    # Sub_Headers = df_sub['Sub_Header'].unique()   # need category too
-    df_sub = get_sub_headers()    #TODO Add Cond_categories
+    sub_header1 = ""
+    sub_header2 = ""
+    df_sub = get_sub_headers()     
     i = 0
     found_sub_headers = []
 
     try:
-        doc = open(textfile,'r') #,encoding='utf8'
-#            text = doc.read()
+        with suppress(BufferError):
+            doc1 = open(textfile,'r') #,encoding='utf8'
+            lines = doc1.readlines()
+            doc1.close()
+    
         
-        for line in doc:   # Read each line in the text document 
+        for prev_line,curr_line,next_line in get_lines(lines):   # Read each line in the text document 
 
             i = i + 1
-
+            
             # re-use bookend2 for bookend1 on the next iteration
-            if (bookend2 != "") & (bookend1 != bookend2):
+            if (bookend2 != "SearchFail") & (bookend1 != bookend2):
                 bookend1 = bookend2
+                sub_header1 = sub_header2
                 logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' Convert bookend2 ' + bookend2 + ' to bookend1 ')
                 first_sub_header_matched = True
 
@@ -182,15 +258,16 @@ def get_bookends(textfile):
                     # Skip already matched sub headers    
                     if df_sub.iloc[j,0] != '':    
                         sub_header = df_sub.iloc[j,0]
-                        sub_category = df_sub.iloc[j,1]
+                        
                     else:
                         continue    
                     
-                    #Check for sub_header        
-                    if search_line(textfile,sub_header,line,"first",i) == True:
+                    #Check for sub_header
+                    bookend1 = search_line(textfile,sub_header,prev_line,curr_line,next_line,"first",i) 
+                    if bookend1 != "SearchFail":
+                        
                         first_sub_header_matched = True
-                        bookend1 = sub_header
-                        cond_cat1 = sub_category
+                        sub_header1 = df_sub.iloc[j,0]
                         start_line = i  
                         logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' First sub header matched! ' + sub_header + ' ..deleting')
                         #remove the sub_header so it wont get matched as the first sub header again
@@ -211,11 +288,12 @@ def get_bookends(textfile):
                         continue   
                     
                     #Check for second sub_header        
-                    if search_line(textfile,sub_header,line,"second",i) == True:
+                    bookend2 = search_line(textfile,sub_header,prev_line,curr_line,next_line,"second",i) 
+                    if bookend2 != "SearchFail":
 #                        print(f"post search second sub_header {sub_header}")
                         logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' Second sub header matched! ' + sub_header + ' ')
                         second_sub_header_matched = True
-                        bookend2 = sub_header
+                        sub_header2 = df_sub.iloc[j,0]
                         end_line = i
                         #remove the sub_header so it wont get matched as the first sub header again
                         df_sub.iloc[j,0] = '' 
@@ -223,7 +301,7 @@ def get_bookends(textfile):
 
             #Accumulate conditions for this text document            
             if second_sub_header_matched == True:
-                fields = [textfile, bookend1, bookend2, cond_cat1]
+                fields = [textfile,bookend1,bookend2,sub_header1]
                 bookends.append(fields)
                 first_sub_header_matched = False
                 second_sub_header_matched = False
@@ -234,10 +312,9 @@ def get_bookends(textfile):
             second_sub_header_matched = True
             bookend2 = "\Z"
             end_line = i
-            fields = [textfile, bookend1, bookend2, cond_cat1]
+            fields = [textfile,bookend1,bookend2,sub_header1]
             bookends.append(fields)
-
-        doc.close()
+        
     except Exception as e:
         logging.info(inspect.stack()[0][3] + ' ERROR: TEXT: ' + textfile + ' could not open. Error was ' + str(e))
         return False, False
@@ -249,22 +326,29 @@ def get_bookends(textfile):
         logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' Skipping... Second sub header not matched'  )
         result = False, False
     else:
-        try:
-            doc = open(textfile,'r') #,encoding='utf8'
-            text = doc.read()
-            doc.close()
-
-        except Exception as e:
-            logging.info(inspect.stack()[0][3] + ' ERROR: TEXT: ' + textfile + ' could not open. Error was ' + str(e))
-        
+        with suppress(BufferError):
+            doc2 = open(textfile,'r') #,encoding='utf8'
+            text = doc2.read()
+            doc2.close()
+     
         if bookends != '':
             result = bookends,text
         else:
-            result = False, False
-        
-    #    result = bookends,text
-    
-#    print(bookends)
+            result = False, False        
+    #    try:
+    #        doc2 = open(textfile,'r') #,encoding='utf8'
+    #        text = doc2.read()
+    #        doc2.close()
+    #    except EOFError:
+    #        print("EOF error")
+    #        pass  
+    #    except BufferError:
+    #        print("BufferError error")
+    #        pass  
+    #    except Exception as e:
+    #        logging.info(inspect.stack()[0][3] + ' ERROR: TEXT: ' + textfile + ' could not open. Error was ' + str(e))
+    #    
+   
     return result
 
 
@@ -274,7 +358,9 @@ def get_bookends(textfile):
 def get_conditions(textfiles):
 
     #1. extract and categorise conditions
-    conditions = []
+
+    df_cond1 = pd.DataFrame(columns=['Textfile','Sub_Header','Sub_Section'])
+    df_cond = pd.DataFrame(columns=['Textfile','Sub_Header','Sub_Section'])
     for i in range(len(textfiles)):
 
         logging.info(inspect.stack()[0][3] + ' Started processing ' + os.path.basename(textfiles[i]) + ' at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
@@ -287,34 +373,22 @@ def get_conditions(textfiles):
             logging.info(inspect.stack()[0][3] + ' ERROR TEXT: ' + textfiles[i] + ' text error ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
             continue    
         else:
-            searchtexts = search_text(bookends,text)     # bookends = [textfile, bookend1, bookend2,cond_cat1,cond_cat2]
-                                                        # searchtexts = [textfile,bookend1,cond_cat1,search_result]
-        
-        
+            searchtexts = search_text(bookends,text)     # bookends = [textfile, bookend1, bookend2]
+                                                         # DataFrame ==> searchtexts = [textfile,bookend1,search_result]
         if searchtexts != False:
 
-            for searchtext in searchtexts:
-
-                fields =[searchtext[0],searchtext[1],searchtext[2],searchtext[3]]
-                conditions.append(fields)
-
+            df_cond1 = pd.DataFrame(searchtexts,columns=['Textfile','Sub_Header','Sub_Section'])
+            df_cond  = df_cond.append(df_cond1)
+            
         logging.info(inspect.stack()[0][3] + ' Finished processing ' + textfiles[i] + ' at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
-  
-
-    return conditions
+ 
+    return df_cond
 
 
 
 def get_sub_headers():
-    df_sub = pd.read_csv(csv_dir + 'dict_cat_sub_headers.csv')
-    print(df_sub)
+    df_sub = pd.read_csv(csv_dir + 'dict_cat_sub_headers.csv',header=0)
     return df_sub  
-
-
-def get_categories():
-    df_cat = pd.read_csv(csv_dir + 'consent_ewords.csv')
-    
-    return df_cat
 
 
 
@@ -345,7 +419,7 @@ def get_textfile_paths(df_text):
 def get_textfiles():
     
 #    textfiles = glob.glob(files_dir + '*')
-    df_text = pd.read_csv(csv_dir + 'test.csv')
+    df_text = pd.read_csv(csv_dir + 'train.csv')
     textfile_paths = get_textfile_paths(df_text)
     return df_text, textfile_paths
 
@@ -356,13 +430,12 @@ def main():
 
     setupLogging()
     df_test, textfile_paths = get_textfiles()
-    df_cat = get_categories()
     
     
-    #conditions = get_conditions(textfile_paths) #TODO
-    conditions = get_conditions(["/home/admin/dockers/masters/data/pdfminer/search/MP11_0047.txt"])  #MP06_0021-Mod-3.txt
     
-    write_ok = write_csv(conditions)
+    df_conditions = get_conditions(textfile_paths) #TODO
+    #df_conditions = get_conditions(["/home/admin/dockers/masters/data/pdfminer/search/MP11_0047.txt"])  #MP06_0021-Mod-3.txt
+    write_ok = write_csv(df_conditions)
     
     #textfile_paths = pd.DataFrame(get_textfile_paths(textfiles))
     logging.info(inspect.stack()[0][3] + ' Logging ended at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))

@@ -24,7 +24,7 @@ def setupLogging(dest_dir=None):
     logfile = logs_dir + str(datetime.now().strftime('%Y%m%d%H%M%S')) + ".log"
     logging.basicConfig(filename=logfile,level=logging.INFO)
     logging.info('-' * 80)
-    logging.info(' Logging started at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+    logging.info(' extract_sub_headers.py Logging started at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 
 
 
@@ -44,11 +44,14 @@ def write_text(textfile,all_text):
 def write_csv(all_sub_headers):
     
     fname = csv_dir + 'consent_sub_headers.csv'
-   
-    unique_sub_headers = []
-    unique_sub_headers = list(set(all_sub_headers))
+    
+    df_cat = pd.DataFrame(all_sub_headers,columns=['Textfile','Sub_Header'])
+    df = df_cat.drop_duplicates(subset=['Sub_Header'])
+    
+#    unique_sub_headers = []
+#    unique_sub_headers = list(set(all_sub_headers[0]))
 
-    df = pd.DataFrame(unique_sub_headers,columns=['Sub_Header'])
+#    df = pd.DataFrame(unique_sub_headers,columns=['Textfile','Sub_Header'])
     df.to_csv(fname,encoding='utf-8',index=False,mode='a') 
     logging.info(' CSV: ' + fname + ' created')
     return True  # need to check status of file     
@@ -68,7 +71,8 @@ def read_textfile(df_cat,textfile):
     i = 1
 #    Sub_Headers = df_cat['Sub_Header'].unique()
     found_sub_headers = []
-    search_headers = regex.findall(r'\n\s?\n[A-Z][A-Za-z\s]*\n',text)
+#    search_headers = regex.findall(r'\n\s?\n[A-Z][A-Za-z\s]*\n',text)
+    search_headers = regex.findall(r'\n\s*\n[A-Z][A-Za-z\s]*(?:\s–\s)*[A-Za-z\s]*\n+',text)
     if search_headers != None:
     
         for found_sub_header in search_headers:
@@ -91,11 +95,12 @@ def get_conditions(df_cat,textfiles):
     for i in range(len(textfiles)):
 
         logging.info(' Started processing ' + textfiles[i] + ' at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
-        result = read_textfile(df_cat, textfiles[i])
-        if result != False:
+        found_sub_headers = read_textfile(df_cat, textfiles[i])
+        if found_sub_headers != False:
 
-            for sub_header in result:
-                all_sub_headers.append(sub_header)
+            for sub_header in found_sub_headers:
+                fields = [textfiles[i],sub_header]
+                all_sub_headers.append(fields)
         
         
         logging.info(' Finished processing ' + textfiles[i] + ' at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))

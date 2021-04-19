@@ -6,7 +6,7 @@ import regex
 import PyPDF2
 import logging
 import glob, os
-import fitz
+import fitz   #PyMuPDF
 from datetime import datetime, date
 
 
@@ -52,7 +52,7 @@ def setupLogging(dest_dir=None):
     logfile = logs_dir + str(datetime.now().strftime('%Y%m%d%H%M%S')) + ".log"
     logging.basicConfig(filename=logfile,level=logging.INFO)
     logging.info('-' * 80)
-    logging.info(' Logging started at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+    logging.info(' extract_groundwater_cond1.3.py Logging started at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 
 
 
