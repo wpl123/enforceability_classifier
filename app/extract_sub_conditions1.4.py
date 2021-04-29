@@ -50,11 +50,11 @@ def write_csv(df_cond):
     cat4 = []
     cat5 = []
     
-    fname1 = cond_dir + 'cat1/consent_sub_section.csv'
-    fname2 = cond_dir + 'cat2/consent_sub_section.csv'
-    fname3 = cond_dir + 'cat3/consent_sub_section.csv'
-    fname4 = cond_dir + 'cat4/consent_sub_section.csv'
-    fname5 = cond_dir + 'cat5/consent_sub_section.csv'
+    fname1 = cond_dir + 'cat1/pred_consent_sub_section.csv'
+    fname2 = cond_dir + 'cat2/pred_consent_sub_section.csv'
+    fname3 = cond_dir + 'cat3/pred_consent_sub_section.csv'
+    fname4 = cond_dir + 'cat4/pred_consent_sub_section.csv'
+    fname5 = cond_dir + 'pred_consent_sub_section.csv'
     
     df_sub = get_sub_headers() 
     pd.set_option('display.max_rows', None)
@@ -76,31 +76,29 @@ def write_csv(df_cond):
                     cat3.append(fields)
                 elif df_sub.iloc[j,1] == 4:
                     cat4.append(fields)
-                elif df_sub.iloc[j,1] == 5:
-                    cat5.append(fields)
                 else:
                     pass            
     
 
     df1 = pd.DataFrame(cat1,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
     df1.to_csv(fname1,encoding='utf-8',index=False,mode='w') 
-    logging.info(' write_csv CSV: ' + fname1)
+    logging.info(inspect.stack()[0][3] + ' write_csv CSV: ' + fname1)
     
     df2 = pd.DataFrame(cat2,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
     df2.to_csv(fname2,encoding='utf-8',index=False,mode='w') 
-    logging.info(' write_csv CSV: ' + fname2)
+    logging.info(inspect.stack()[0][3] + ' write_csv CSV: ' + fname2)
     
     df3 = pd.DataFrame(cat3,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
     df3.to_csv(fname3,encoding='utf-8',index=False,mode='w') 
-    logging.info(' write_csv CSV: ' + fname3)
+    logging.info(inspect.stack()[0][3] + ' write_csv CSV: ' + fname3)
     
     df4 = pd.DataFrame(cat4,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
     df4.to_csv(fname4,encoding='utf-8',index=False,mode='w') 
-    logging.info(' write_csv CSV: ' + fname4 )
+    logging.info( ' write_csv CSV: ' + fname4 )
     
-    df5 = pd.DataFrame(cat5,columns=['Textfile','Sub_Header','Cond_Category','Sub_Section'])
-    df5.to_csv(fname5,encoding='utf-8',index=False,mode='w') 
-    logging.info(' write_csv CSV: ' + fname5)
+    
+    df_cond.to_csv(fname5,encoding='utf-8',index=False,mode='w') 
+    logging.info(inspect.stack()[0][3] + ' write_csv CSV: ' + fname5)
 
     return True  # need to check status of file     
 
@@ -114,8 +112,11 @@ def clean_text(textfile,text):
     text = regex.sub(r'Department of Planning\, Industry and Environment','',text)
     text = regex.sub(r'Planning\, Industry & Environment','',text)
     text = regex.sub(r'Department of Planning & Environment','',text)
-    text = regex.sub(r'Department of Planning and Environment','',text) 
-    text = regex.sub(r'Department of Planning','',text)
+    text = regex.sub(r'Department of Planning and Environment','',text)
+    text = regex.sub(r'Department of Planning','',text) 
+    text = regex.sub(r'Consolidated version','',text)  
+    text = regex.sub(r'\'','',text)
+    text = regex.sub(r'\"','',text)
     
     # Remove section numbers and page numbers
     text = regex.sub(r'(\n*[0-9][0-9]*\.?\s*\n)','',text)
@@ -197,9 +198,6 @@ def search_line(textfile,sub_header,prev_line,curr_line,next_line,matchno,i):  #
         return search_failed
 
     pattern = r'(\b)' + sub_header + r'(\s*\n)'
-#    pattern = regex.compile(pattern,regex.DOTALL) 
-#    search = pattern.search(line)
-#    pattern = r'(\n+\s*)' + sub_header + r'(\s*\n)'
     search = regex.match(pattern,curr_line,regex.DOTALL)
 
 #    if i == 1:
@@ -240,7 +238,7 @@ def get_bookends(textfile):
             doc1.close()
     
         
-        for prev_line,curr_line,next_line in get_lines(lines):   # Read each line in the text document 
+        for prev_line,curr_line,next_line in get_lines(lines):   # Read each previous, current and next line in the text document 
 
             i = i + 1
             
@@ -251,6 +249,7 @@ def get_bookends(textfile):
                 logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' Convert bookend2 ' + bookend2 + ' to bookend1 ')
                 first_sub_header_matched = True
 
+            # executed on the first line of data only
             if first_sub_header_matched == False:
 
             # Loop through the sub heading and check for first sub_header in the current line 
@@ -335,19 +334,7 @@ def get_bookends(textfile):
             result = bookends,text
         else:
             result = False, False        
-    #    try:
-    #        doc2 = open(textfile,'r') #,encoding='utf8'
-    #        text = doc2.read()
-    #        doc2.close()
-    #    except EOFError:
-    #        print("EOF error")
-    #        pass  
-    #    except BufferError:
-    #        print("BufferError error")
-    #        pass  
-    #    except Exception as e:
-    #        logging.info(inspect.stack()[0][3] + ' ERROR: TEXT: ' + textfile + ' could not open. Error was ' + str(e))
-    #    
+    
    
     return result
 
@@ -419,7 +406,7 @@ def get_textfile_paths(df_text):
 def get_textfiles():
     
 #    textfiles = glob.glob(files_dir + '*')
-    df_text = pd.read_csv(csv_dir + 'train.csv')
+    df_text = pd.read_csv(csv_dir + 'pred.csv')
     textfile_paths = get_textfile_paths(df_text)
     return df_text, textfile_paths
 
@@ -436,7 +423,7 @@ def main():
     df_conditions = get_conditions(textfile_paths) #TODO
     #df_conditions = get_conditions(["/home/admin/dockers/masters/data/pdfminer/search/MP11_0047.txt"])  #MP06_0021-Mod-3.txt
     write_ok = write_csv(df_conditions)
-    
+    print(write_ok)
     #textfile_paths = pd.DataFrame(get_textfile_paths(textfiles))
     logging.info(inspect.stack()[0][3] + ' Logging ended at ' + datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
 

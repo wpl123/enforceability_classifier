@@ -3,9 +3,10 @@
 #
 #	https://jupyter-docker-stacks.readthedocs.io/en/latest/index.html
 
-WORKDIR=$PWD/data
+WORKDIR=$PWD/model
 #WORKDIR=$HOME/dockers/waterdata_frontend/data
-docker run --user root --rm -p 8888:8888 -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes -v $WORKDIR:/home/jovyan/work jms
+#docker run --user root --rm -p 8888:8888 -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes -v $WORKDIR:/home/jovyan/work jms
+docker run --user root --rm -p 8888:8888 -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes -v $WORKDIR:/home/jovyan/work 76eba5ee3600
 
 #jupyter/datascience-notebook:
 #latest

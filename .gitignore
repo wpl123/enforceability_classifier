@@ -5,6 +5,7 @@ utils/
 .git.old/
 .vscode
 .history
+jms.sh
 app/.vscode
 app/__pycache
 workspace.code-workspace
