@@ -9,3 +9,12 @@ jms.sh
 app/.vscode
 app/__pycache
 workspace.code-workspace
+.gitignore
+model/Untitled.ipynb
+model/Untitled1.ipynb
+model/Untitled2.ipynb
+model/Untitled3.ipynb
+model/wordcloud.png
+model/.ipynb_checkpoints/enforceability_model-checkpoint.ipynb
+model/coded_sub_section.old.csv
+model/coded_sub_section.csv

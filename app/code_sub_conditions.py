@@ -112,7 +112,7 @@ def score_consent_cond(df_text,df_es):
 
     for i in range(len(df_text)):                           # loop thru the consent by category csv files
         
-
+                                                            # Grab the first sentence
         conditions = []
         prev_rule = 0
         es = 0
