@@ -144,15 +144,10 @@ def clean_text(textfile,text):
     text = regex.sub(r'Consolidated version','',text)
 
     
-    text = regex.sub(r'!\"#$%&\(\)*\+\,\-\/:;<=>\?@\[\\\]\^_\`\{\|\}~','',text)
-#    text = regex.sub(r'\"','',text)
-#    text = regex.sub(r'\,','',text)
-#    text = regex.sub(r'No\.','No',text)
-    text = regex.sub(r'\’','',text)
-    
-#   text = regex.sub(r'•.*','',text,regex.DOTALL)   
-    
-    
+    # Remove non word characters
+    text = regex.sub(r'[!\"\'#$%&\(\)*\+\,\-\/:;<=>\?@\[\\\]\^_\`\{\|\}~]','',text)
+    text = regex.sub(r'\’','',text)  
+        
     
     # Remove section numbers and page numbers
     text = regex.sub(r'(\n*[0-9][0-9]*\.?\s*\n)','',text)
@@ -173,21 +168,30 @@ def clean_text(textfile,text):
     #3. Remove Notes
     if regex.search("Note",text) != None:
         pattern = '(\A.*(?=Note))'
-        table_pattern = regex.compile(pattern,regex.DOTALL)    
-        table_search = table_pattern.search(text)
-        if table_search != None:
-            text = str(table_search.group(0))
+        notes_pattern = regex.compile(pattern,regex.DOTALL)    
+        notes_search = notes_pattern.search(text)
+        if notes_search != None:
+            text = str(notes_search.group(0))
 
 
-    #3. Dot points (remove all characters to the end of the condition)
+    #4. Dot points (remove all characters to the end of the condition)
     if regex.search("•",text) != None:
         pattern = '(\A.*(?=•))'
-        table_pattern = regex.compile(pattern,regex.DOTALL)    
-        table_search = table_pattern.search(text)
-        if table_search != None:
-            text = str(table_search.group(0))
-              
+        dot_pattern = regex.compile(pattern,regex.DOTALL)    
+        dot_search = dot_pattern.search(text)
+        if dot_search != None:
+            text = str(dot_search.group(0))
 
+    
+#    #5. Part sentences (remove all sentences where the first character is a space / lowercase)
+#    print(text)
+#    pattern = "\A\s*[a-z]"
+#    lower_pattern = regex.compile(pattern,regex.DOTALL)    
+#    lower_search = lower_pattern.search(text)
+#    if lower_search != None:
+#        print(text)
+#        logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' removing lowercase sentence ')
+#        text = None
 
 #    logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' Cleaning Text ')    
     return text
@@ -226,8 +230,11 @@ def search_text(bookends,text):  # conditions = [textfile, bookend1, bookend2]
 #            print(f"Textfile: {textfile} Sub Header: {sub_header1}")
 
             final_text = clean_text(textfile,search_result)
-            fields = [textfile,sub_header1,final_text]
-            conditions.append(fields)
+            if final_text == None:
+                logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' ' + str(sub_header_search) + ' lowercase text at start of text')
+            else:    
+                fields = [textfile,sub_header1,final_text]
+                conditions.append(fields)
         else:
             logging.info(inspect.stack()[0][3] + ' TEXT: ' + os.path.basename(textfile) + ' missing bookends in search string' + str(sub_header_search) + ' in text')
             result = False      

@@ -1,0 +1,86 @@
+/*!
+**body {
+**    font-family: Verdana,Arial, Geneva,sans-serif;
+**    color: #03363D;
+**    font-weight: normal;
+**    background-color: #9c9f84;
+**    font-size: 25px;
+**}
+**
+**
+**
+**h1 {
+**
+**    
+**    font-size: 150%;
+**
+**}
+**
+**h2 {
+**
+**    text-decoration: underline;
+**    font-size: 120%;
+**
+**}
+**
+**h1, h2, h3, h4, h5, h6 {
+**    color: #03363D;
+**}
+*/
+
+p.para3 {
+
+    color:#03363D;
+    font-size: 15px;
+    line-height: 1.5em;
+    background-color: #e5e4d7;
+    padding: 20px;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+}
+
+.input_conditions {
+    background-color: #e5e4d7; 
+    font-size: 70%;
+    line-height: 1.5em;
+    padding: 20px;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+    width: 45%;
+    
+
+}
+
+.gauge_graph {
+    background-color: #e5e4d7; 
+    font-size: 70%;
+    line-height: 1.5em;
+    padding: 20px;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+    width: 45%;
+
+}
+
+.submit_button{
+
+    color: white;
+    background-color: #515244;
+    font-size: 100%;
+    padding: 10px;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+}
+.container {
+
+    background-color: #EDEDED;
+}
+
+
+#ec_gauge1, #ec_gauge2,user-select-none svg-container {
+    background-color: #9c9f84;
+}

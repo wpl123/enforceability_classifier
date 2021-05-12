@@ -51,13 +51,13 @@ def write_csv(df_scored):
 
         fields = [df_scored.iloc[i,0],df_scored.iloc[i,1],df_scored.iloc[i,2],df_scored.iloc[i,3],df_scored.iloc[i,4],df_scored.iloc[i,5]]
            
-        if df_scored.iloc[i,3] == 1:
+        if df_scored.iloc[i,4] == 1:
             cat1.append(fields)
-        elif df_scored.iloc[i,3] == 2:
+        elif df_scored.iloc[i,4] == 2:
             cat2.append(fields)
-        elif df_scored.iloc[i,3] == 3:
+        elif df_scored.iloc[i,4] == 3:
             cat3.append(fields)
-        elif df_scored.iloc[i,3] == 4:
+        elif df_scored.iloc[i,4] == 4:
             cat4.append(fields)
         else:
             pass            
@@ -101,6 +101,8 @@ def get_sub_cond_year(df_year,textfile):
     return result
 
 
+    
+
 def score_consent_cond(df_text,df_es):
     
     df_cond1 = pd.DataFrame(columns=['Textfile','Determination_Year','Sub_Header','Sub_Section','Cond_Category','EScore'])
@@ -112,7 +114,7 @@ def score_consent_cond(df_text,df_es):
 
     for i in range(len(df_text)):                           # loop thru the consent by category csv files
         
-                                                            # Grab the first sentence
+                                                             # Grab the first sentence
         conditions = []
         prev_rule = 0
         es = 0
@@ -127,7 +129,7 @@ def score_consent_cond(df_text,df_es):
 
                 if str(df_text.iloc[i,3]).find(ew) == -1:   
 
-                    pass                                    # break if an enforceable word from the list is not found in the text
+                    pass                                    # pass if an enforceable word from the list is not found in the text
 
                 else:                                       # calc the enforceable word score
                     if es == 0:
