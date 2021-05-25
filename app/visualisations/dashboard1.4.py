@@ -133,7 +133,7 @@ card_header = dbc.Card(
             html.Div(
                 className="app-header",
                 children=[
-                    html.H1('Enforceability Classifier/Predictor', 
+                    html.H1('EC Dashboard', 
                         className="app-header--title", 
                         ),
                     ],
@@ -214,7 +214,7 @@ app.layout = dbc.Container(
                 className='custom-tab',
                 selected_className='custom-tab--selected', 
                 ),
-            dcc.Tab(label="Corpus Statistics", 
+            dcc.Tab(label="Statistics", 
                 value="stats",
                 className='custom-tab',
                 selected_className='custom-tab--selected', 
