@@ -2,6 +2,8 @@ venv/
 data/
 bak/
 utils/
+model2/
+test_dir/
 .git.old/
 .vscode
 .history

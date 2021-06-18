@@ -18,7 +18,7 @@ from nltk import word_tokenize
 nltk.download('stopwords')
 STOPWORDS = set(stopwords.words('english'))
 
-df = pd.read_csv('data/code_consents/coded_sub_section.csv',header=0)
+df = pd.read_csv('model/data/coded_sub_section.csv',header=0)
 df = df.drop(['Textfile','Sub_Header','Cond_Category','Determination_Year'],axis=1)
 df['Stars'] = 0
 

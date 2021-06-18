@@ -135,7 +135,9 @@ def score_consent_cond(df_text,df_es):
                     if es == 0:
                         es = df_es.iloc[j,3]
                     else:
-                        es = es * df_es.iloc[j,3]
+                        es = es * df_es.iloc[j,3]          # multiply es  
+#                        if es >= df_es.iloc[j,3]:         # use the lowest enforceable word score
+#                            es = df_es.iloc[j,3]          # (hashed out)
                     
                     logging.info(inspect.stack()[0][3] + ' Scoring ' + os.path.basename(df_text.iloc[i,0] + ' ') 
                             + str(df_text.iloc[i,1]) + ' Sub_Sect ' 
